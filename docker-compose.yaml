@@ -1,0 +1,51 @@
+services:
+  server:
+    build: .
+    container_name: server
+    ports:
+      - "3000:3000"
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+    env_file:
+      - ./.env
+    healthcheck:
+      # test: wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+      test: curl --fail http://localhost:3000/health || exit 1
+      interval: 60s
+      retries: 5
+      start_period: 20s
+      timeout: 10s
+    depends_on:
+      - db
+
+  #####
+  # DB
+  #####
+  db:
+    build: ./db #TODO
+    container_name: db
+    ports:
+      - "5432:5432"
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    env_file:
+      - ./.env
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    volumes:
+      # Volume to persist db content even if 'docker-compose down' is run. Add '-v' to delete also volumes
+      - db-data:/var/lib/postgresql/data
+
+#####
+# Volumes
+#####
+
+volumes:
+  db-data:

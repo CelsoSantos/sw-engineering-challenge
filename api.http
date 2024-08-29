@@ -1,0 +1,139 @@
+@protocol = http
+@address = localhost
+@port = 3000
+@contentType = application/json
+
+###
+GET {{protocol}}://{{address}}:{{port}}/ HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+GET {{protocol}}://{{address}}:{{port}}/health HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+GET {{protocol}}://{{address}}:{{port}}/points-of-interest HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+GET {{protocol}}://{{address}}:{{port}}/points-of-interest?page=0&per_page=10 HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+GET {{protocol}}://{{address}}:{{port}}/points-of-interest?page=1&per_page=10 HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+GET {{protocol}}://{{address}}:{{port}}/points-of-interest/7737cc63-4024-4626-984d-5dadabf784ff HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+GET {{protocol}}://{{address}}:{{port}}/points-of-interest/00000000-0000-0000-0000-00000000000f HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+DELETE {{protocol}}://{{address}}:{{port}}/points-of-interest/00000000-0000-0000-0000-00000000000f HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+PUT {{protocol}}://{{address}}:{{port}}/points-of-interest/create HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+  "status": 0,
+  "address": {
+    "country": "Portugal",
+    "zip": 2400,
+    "city": "Lisbon",
+    "street": "R. David Joaquim",
+    "house_number": 121
+  },
+  "pumps": [
+    {
+      "name": "1",
+      "fuel_products": [{ "id": "66837c0a-4770-4349-a8ce-f3e531822d15"}, { "id": "4053be8b-e5d1-42f5-93cc-306584890a06"}]
+    }
+  ],
+  "business_hours": { "id": "4e712ebd-2601-489b-8afc-881521f41ad4" }
+}
+
+###
+PATCH {{protocol}}://{{address}}:{{port}}/points-of-interest/7737cc63-4024-4626-984d-5dadabf784ff HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+  "id": "7737cc63-4024-4626-984d-5dadabf784ff",
+  "status": 0,
+  "address": {
+    "id": "a01b3f95-9fc8-4a99-837d-10a006e1a642",
+    "country": "Portugal",
+    "zip": 2400,
+    "city": "Lisbon",
+    "street": "R. Joaquim David",
+    "house_number": 127
+  },
+  "pumps": [
+    {
+      "id": "2ca3dd63-55e7-40e0-a580-f850a5f50aeb",
+      "name": "1",
+      "fuel_products": [
+        {
+          "id": "66837c0a-4770-4349-a8ce-f3e531822d15",
+          "name": "DIESEL",
+          "price": {
+            "EUR": 1,
+            "CHF": 1,
+            "USD": 1
+          }
+        },
+        {
+          "id": "4053be8b-e5d1-42f5-93cc-306584890a06",
+          "name": "UNLEADED 95",
+          "price": {
+            "EUR": 2,
+            "CHF": 2,
+            "USD": 2
+          }
+        }
+      ]
+    }
+  ],
+  "business_hours": {
+    "id": "4e712ebd-2601-489b-8afc-881521f41ad4",
+    "type": 1,
+    "description": "Open Monday to Friday from 8 AM to 8 PM, Saturdays from 8 AM to 6 PM, closed on Sundays and public holidays"
+  }
+}
+
+###
+PATCH {{protocol}}://{{address}}:{{port}}/points-of-interest/7737cc63-4024-4626-984d-5dadabf784ff HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+  "id": "7737cc63-4024-4626-984d-5dadabf784ff",
+  "address": {
+    "country": "Portugal",
+    "zip": 2400,
+    "city": "Coimbra",
+    "street": "R. Moises Jesus",
+    "house_number": 666
+  }
+}
+
+###
+PATCH {{protocol}}://{{address}}:{{port}}/points-of-interest/7737cc63-4024-4626-984d-5dadabf784ff HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+  "id": "7737cc63-4024-4626-984d-5dadabf784ff",
+  "address": {
+    "id": "a01b3f95-9fc8-4a99-837d-10a006e1a642"
+  },
+  "business_hours": {
+    "id": "9d6ee6d9-d5e0-43f9-8d25-5206e86872cc"
+  }
+}
+
+###
+DELETE {{protocol}}://{{address}}:{{port}}/points-of-interest/7737cc63-4024-4626-984d-5dadabf784ff HTTP/1.1
+Content-Type: {{contentType}}
