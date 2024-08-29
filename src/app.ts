@@ -1,27 +1,43 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
-import http, { Server } from "http";
-
 import express, { Express, Request, Response } from "express";
-import { startServer, shutdownServer } from "./server";
 
-const app: Express = express();
+class ExpressApp {
 
-const server: Server = http.createServer(app);
-const port = process.env.PORT || 3000;
+  public app: Express;
+  private server: any;
 
-app.use(express.json());
+  constructor() {
+    this.app = express();
+  }
 
-app.get('/', (req: Request, res: Response) => {
-  res.status(200).send('Hello! My name is Celso Santos');
-});
+  public startServer = (port: number): void => {
+    this.server = this.app.listen(port, () => {
+      console.log(`[Server]: Server is running at http://localhost:${port}`);
+    });
+  }
 
-startServer();
+  public stopServer = (): void => {
+    this.server.close(() => {
+      //console.log('HTTP server closed');
+    });
+  }
 
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM signal received: closing HTTP server')
-  await shutdownServer();
-})
+  private initMiddleware = (): void => {
+    this.app.use(express.json());
+  }
 
-export default app;
+  private setupRoutes = (): void => {
+    this.app.get('/', async (req: Request, res: Response) => {
+      res.status(200).send('Hello! My name is Celso Santos');
+    });
+  }
+
+  public initApp = async (): Promise<void> => {
+    this.initMiddleware();
+    this.setupRoutes();
+  }
+}
+
+export default ExpressApp;
