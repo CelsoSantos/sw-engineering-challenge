@@ -2,6 +2,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 import express, { Express, Request, Response } from "express";
+import { CommonRoutesConfig, HealthRoutes } from "./routes";
 
 class ExpressApp {
 
@@ -32,6 +33,9 @@ class ExpressApp {
     this.app.get('/', async (req: Request, res: Response) => {
       res.status(200).send('Hello! My name is Celso Santos');
     });
+
+    const routes: Array<CommonRoutesConfig> = [];
+    routes.push(new HealthRoutes(this.app));
   }
 
   public initApp = async (): Promise<void> => {

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon",
     "build": "tsc",
-    "start": "npm run build && ts-node src/app.ts",
+    "start": "npm run build && ts-node src/index.ts",
     "lint": "eslint --fix --quiet src/**/*.ts",
     "format": "prettier --loglevel silent --write src/**/*.ts",
     "test": "jest --detectOpenHandles",
