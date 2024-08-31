@@ -20,5 +20,42 @@ GET {{protocol}}://{{address}}:{{port}}/bloqs?page=0&per_page=10 HTTP/1.1
 Content-Type: {{contentType}}
 
 ###
+GET {{protocol}}://{{address}}:{{port}}/bloqs?page=0&per_page=10&lockers=true HTTP/1.1
+Content-Type: {{contentType}}
+
+###
 GET {{protocol}}://{{address}}:{{port}}/bloqs?page=1&per_page=10 HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+GET {{protocol}}://{{address}}:{{port}}/bloqs/c3ee858c-f3d8-45a3-803d-e080649bbb6f HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+PUT {{protocol}}://{{address}}:{{port}}/bloqs/new HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+  "title": "Some new Bloq",
+  "address": "At my place"
+}
+
+###
+PATCH {{protocol}}://{{address}}:{{port}}/bloqs/484e01be-1570-4ac1-a2a9-02aad3acc54e HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+  "title": "Riod Example"
+}
+
+###
+PATCH {{protocol}}://{{address}}:{{port}}/bloqs/484e01be-1570-4ac1-a2a9-02aad3acc54e HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+  "address": "Modified Address"
+}
+
+###
+DELETE {{protocol}}://{{address}}:{{port}}/bloqs/c3ee858c-f3d8-45a3-803d-e080649bbb6f HTTP/1.1
 Content-Type: {{contentType}}
