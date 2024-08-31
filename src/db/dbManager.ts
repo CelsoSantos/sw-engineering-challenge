@@ -74,7 +74,7 @@ const listenChangesinArray = (arr: any, callback: any) => {
 
 const writeFile = (...args: any) => {
   try {
-    fs.writeFileSync(args[0], JSON.stringify(args[1], null, 4), 'utf8');
+    fs.writeFileSync(args[0], JSON.stringify(args[1], null, 2), 'utf8');
     console.log('Data successfully saved to disk');
   } catch (error) {
     console.log('An error has occurred ', error);

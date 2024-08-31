@@ -11,6 +11,7 @@ Content-Type: {{contentType}}
 GET {{protocol}}://{{address}}:{{port}}/health HTTP/1.1
 Content-Type: {{contentType}}
 
+### Bloqs Requests
 ###
 GET {{protocol}}://{{address}}:{{port}}/bloqs HTTP/1.1
 Content-Type: {{contentType}}
@@ -29,6 +30,10 @@ Content-Type: {{contentType}}
 
 ###
 GET {{protocol}}://{{address}}:{{port}}/bloqs/c3ee858c-f3d8-45a3-803d-e080649bbb6f HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+GET {{protocol}}://{{address}}:{{port}}/bloqs/c3ee858c-f3d8-45a3-803d-e080649bbb6f?lockers=true HTTP/1.1
 Content-Type: {{contentType}}
 
 ###
@@ -58,4 +63,48 @@ Content-Type: {{contentType}}
 
 ###
 DELETE {{protocol}}://{{address}}:{{port}}/bloqs/c3ee858c-f3d8-45a3-803d-e080649bbb6f HTTP/1.1
+Content-Type: {{contentType}}
+
+### Lockers Requests
+###
+GET {{protocol}}://{{address}}:{{port}}/lockers HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+GET {{protocol}}://{{address}}:{{port}}/lockers?page=0&per_page=10 HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+GET {{protocol}}://{{address}}:{{port}}/lockers?page=1&per_page=10 HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+GET {{protocol}}://{{address}}:{{port}}/lockers/2191e1b5-99c7-45df-8302-998be394be48 HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+GET {{protocol}}://{{address}}:{{port}}/lockers/2191e1b5-99c7-45df-8302-998be394be48?rent=true HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+PUT {{protocol}}://{{address}}:{{port}}/lockers/new HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+  "bloqId": "22ffa3c5-3a3d-4f71-81f1-cac18ffbc510",
+  "status": "OPEN",
+  "isOccupied": false
+}
+
+###
+PATCH {{protocol}}://{{address}}:{{port}}/lockers/2191e1b5-99c7-45df-8302-998be394be48 HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+  "status": "CLOSED",
+  "isOccupied": true
+}
+
+###
+DELETE {{protocol}}://{{address}}:{{port}}/lockers/2191e1b5-99c7-45df-8302-998be394be48 HTTP/1.1
 Content-Type: {{contentType}}

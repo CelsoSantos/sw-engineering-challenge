@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import { randomUUID } from "crypto";
 import { bloqCollection } from "../db/dbManager";
 import { HttpStatusCode } from "../utils/HttpStatusCodes.enum";
-import { Bloq } from "../models";
-
+import { Bloq, Locker } from "../models";
+import { LockersController } from "./lockers.controller";
 
 export class BloqsController {
   list = async (request: Request, response: Response) => {
@@ -47,6 +47,16 @@ export class BloqsController {
     }
     let result: Object = {
       ...bloq
+    }
+
+    const includeLockers: boolean = Boolean(request.query.lockers?.toString());
+    let lockers: Locker[] = [];
+    if (includeLockers) {
+      lockers = LockersController.findByBloqId(bloq.id);
+      result = {
+        ...bloq,
+        lockers: lockers
+      }
     }
 
     return response.status(HttpStatusCode.OK).send(result);

@@ -2,7 +2,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 import express, { Express, Request, Response } from "express";
-import { CommonRoutesConfig, HealthRoutes, BloqsRoutes } from "./routes";
+import { CommonRoutesConfig, HealthRoutes, BloqsRoutes, LockersRoutes } from "./routes";
 
 import { HttpStatusCode } from "./utils/HttpStatusCodes.enum";
 
@@ -39,6 +39,7 @@ class ExpressApp {
     const routes: Array<CommonRoutesConfig> = [];
     routes.push(new HealthRoutes(this.app));
     routes.push(new BloqsRoutes(this.app));
+    routes.push(new LockersRoutes(this.app));
   }
 
   public initApp = async (): Promise<void> => {

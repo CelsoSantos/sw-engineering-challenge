@@ -1,7 +1,7 @@
 export enum RentSize {
-  XS,
-  S,
-  M,
-  L,
-  XL
+  XS = "XS",
+  S = "S",
+  M = "M",
+  L = "L",
+  XL = "XL"
 }
