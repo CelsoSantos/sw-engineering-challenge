@@ -3,6 +3,7 @@ import { createExpressAppInstance, getExpressAppInstance } from "./appInstance";
 import { Express } from "express";
 import request from "supertest";
 import { HttpStatusCode } from "./utils/HttpStatusCodes.enum";
+import { initDb } from "./db/dbManager";
 
 let expressApp: ExpressApp;
 
@@ -20,6 +21,7 @@ beforeAll(async () => {
 
   const port = Math.floor(Math.random() * (max - min + 1)) + min;
   expressApp.startServer(port);
+  initDb();
 })
 
 // beforeEach(async () => {

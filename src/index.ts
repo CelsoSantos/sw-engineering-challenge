@@ -2,6 +2,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 import { createExpressAppInstance, getExpressAppInstance } from "./appInstance";
+import { initDb } from "./db/dbManager";
 
 // Read the port from environment variables or use a default port
 const port: number = process.env.PORT ? parseInt(process.env.PORT) : 3000;
@@ -16,6 +17,9 @@ const initAppAndListen = async () => {
 
   await expressApp.startServer(port);
 };
+
+// Initialize in-memory, file-based, "DB"
+initDb();
 
 // Initialize Server
 initAppAndListen();
