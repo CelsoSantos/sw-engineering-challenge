@@ -4,7 +4,7 @@ import { Express } from "express";
 import request from "supertest";
 import { HttpStatusCode } from "./utils/HttpStatusCodes.enum";
 import { initDb } from "./db/dbManager";
-import { Bloq, Locker, LockerStatus } from "./models";
+import { Bloq, Locker, LockerStatus, Rent, RentSize, RentStatus } from "./models";
 
 let expressApp: ExpressApp;
 
@@ -162,13 +162,74 @@ describe("PUT /lockers/new", () => {
     expect(response.status).toBe(HttpStatusCode.OK);
     expect(response.body.page).toBe(1);
     expect(response.body.per_page).toBe(10); // Default size: 10
-    expect(response.body.total).toBeGreaterThan(9); // Should have 10 elements now
+    expect(response.body.total).toBeGreaterThan(9); // Initial size: 9 elements
     expect(response.body.total).toBe(10); // Should have 10 elements now
     expect(response.body.data.length).toBe(10); // Length should match total
     let locker: Locker = response.body.data[9];
     expect(locker.bloqId).toBe(newLocker.bloqId);
     expect(locker.status).toBe(newLocker.status);
     expect(locker.isOccupied).toBe(newLocker.isOccupied);
+    // (...)
+  });
+});
+
+
+describe("GET /rents", () => {
+  it('responds with the X number of Rents, where X is the page size', async () => {
+    const response = await request(getApp()).get("/rents")
+    expect(response.status).toBe(HttpStatusCode.OK);
+    expect(response.body.page).toBe(1);
+    expect(response.body.per_page).toBe(10); // Default size: 10
+    expect(response.body.total).toBe(4); // Initial size: 4 elements
+    expect(response.body.data.length).toBe(4); // Length should match total
+    let rent: Rent = response.body.data[0];
+    expect(rent.id).toBe("50be06a8-1dec-4b18-a23c-e98588207752");
+    // (...)
+  });
+
+  it('responds with the requested Rent detailed information', async () => {
+    const response = await request(getApp()).get("/rents/50be06a8-1dec-4b18-a23c-e98588207752")
+    expect(response.status).toBe(HttpStatusCode.OK);
+    let rent: Rent = response.body;
+    expect(rent.id).toBe("50be06a8-1dec-4b18-a23c-e98588207752");
+    expect(rent.lockerId).toBeNull();
+    expect(rent.weight).toBe(5);
+    expect(rent.size).toBe(RentSize.M);
+    expect(rent.status).toBe(RentStatus.CREATED)
+  });
+});
+
+describe("PUT /rents/new", () => {
+  let newRent = {
+    lockerId: "ea6db2f6-2da7-42ed-9619-d40d718b7bec",
+    weight: 10,
+    size: RentSize.S,
+    status: RentStatus.WAITING_PICKUP,
+    droppedAt: Date.now()
+  }
+  it('adds a new Rent and responds with the Rent data', async () => {
+    const response = await request(getApp()).put("/rents/new").send(newRent);
+    expect(response.status).toBe(HttpStatusCode.OK);
+    let rent: Rent = response.body;
+    expect(rent.lockerId).toBe(newRent.lockerId);
+    expect(rent.weight).toBe(newRent.weight);
+    expect(rent.size).toBe(newRent.size);
+    expect(rent.status).toBe(newRent.status);
+  });
+
+  it('responds with the X number of Rents, including the new Rent', async () => {
+    const response = await request(getApp()).get("/rents")
+    expect(response.status).toBe(HttpStatusCode.OK);
+    expect(response.body.page).toBe(1);
+    expect(response.body.per_page).toBe(10); // Default size: 10
+    expect(response.body.total).toBeGreaterThan(4); // Initial size: 4 elements
+    expect(response.body.total).toBe(5); // Should have 5 elements now
+    expect(response.body.data.length).toBe(5); // Length should match total
+    let rent: Rent = response.body.data[4];
+    expect(rent.lockerId).toBe(newRent.lockerId);
+    expect(rent.weight).toBe(newRent.weight);
+    expect(rent.size).toBe(newRent.size);
+    expect(rent.status).toBe(newRent.status);
     // (...)
   });
 });

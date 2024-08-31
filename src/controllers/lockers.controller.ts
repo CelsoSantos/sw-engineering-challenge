@@ -37,7 +37,7 @@ export class LockersController {
   getById = async (request: Request, response: Response) => {
     const lockerId = request.params.id;
     // if (!UUID.isValid(id)) {
-    //   return response.status(400).send("bloq ID")
+    //   return response.status(400).send("locker ID")
     // }
 
     const locker = this.findById(lockerId);

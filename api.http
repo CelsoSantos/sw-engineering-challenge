@@ -108,3 +108,49 @@ Content-Type: {{contentType}}
 ###
 DELETE {{protocol}}://{{address}}:{{port}}/lockers/2191e1b5-99c7-45df-8302-998be394be48 HTTP/1.1
 Content-Type: {{contentType}}
+
+### Rents Requests
+###
+GET {{protocol}}://{{address}}:{{port}}/rents HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+GET {{protocol}}://{{address}}:{{port}}/rents?page=0&per_page=10 HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+GET {{protocol}}://{{address}}:{{port}}/rents?page=1&per_page=10 HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+GET {{protocol}}://{{address}}:{{port}}/rents/40efc6fd-f10c-4561-88bf-be916613377c HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+GET {{protocol}}://{{address}}:{{port}}/rents/40efc6fd-f10c-4561-88bf-be916613377c HTTP/1.1
+Content-Type: {{contentType}}
+
+###
+PUT {{protocol}}://{{address}}:{{port}}/rents/new HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+  "lockerId": "8b4b59ae-8de5-4322-a426-79c29315a9f1",
+  "weight": 5,
+  "size": "S",
+  "status": "WAITING_DROPOFF"
+}
+
+###
+PATCH {{protocol}}://{{address}}:{{port}}/rents/50be06a8-1dec-4b18-a23c-e98588207752 HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+  "lockerId": "ea6db2f6-2da7-42ed-9619-d40d718b7bec",
+  "status": "WAITING_PICKUP",
+  "droppedAt": "2024-08-31T20:37:04.372Z"
+}
+
+###
+DELETE {{protocol}}://{{address}}:{{port}}/rents/50be06a8-1dec-4b18-a23c-e98588207752 HTTP/1.1
+Content-Type: {{contentType}}
