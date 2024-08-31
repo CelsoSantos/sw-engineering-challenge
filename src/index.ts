@@ -17,6 +17,7 @@ const initAppAndListen = async () => {
   await expressApp.startServer(port);
 };
 
+// Initialize Server
 initAppAndListen();
 
 process.on('SIGTERM', async () => {

@@ -2,6 +2,7 @@ import ExpressApp from "./app";
 import { createExpressAppInstance, getExpressAppInstance } from "./appInstance";
 import { Express } from "express";
 import request from "supertest";
+import { HttpStatusCode } from "./utils/HttpStatusCodes.enum";
 
 let expressApp: ExpressApp;
 
@@ -40,7 +41,7 @@ export const getApp = (): Express => {
 describe("GET /", () => {
   it('responds with "Hello! My name is Celso Santos"', async () => {
     const response = await request(getApp()).get("/");
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(HttpStatusCode.OK);
     expect(response.text).toBe(
       "Hello! My name is Celso Santos"
     );
@@ -50,7 +51,7 @@ describe("GET /", () => {
 describe("GET /health", () => {
   it('responds with a 200 OK', async () => {
     const response = await request(getApp()).get("/health")
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(HttpStatusCode.OK);
     expect(response.text).toBe("OK");
   });
 });

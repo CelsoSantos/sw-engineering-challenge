@@ -22,6 +22,7 @@
   },
   "include": [
     "src/**/*.ts",
+    "src/db/data/*.json"
   ],
   "exclude": [
     "node_modules",

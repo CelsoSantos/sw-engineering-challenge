@@ -3,5 +3,5 @@ import { HealthRoutes } from "./health.routes";
 
 export {
   CommonRoutesConfig,
-  HealthRoutes
+  HealthRoutes,
 }

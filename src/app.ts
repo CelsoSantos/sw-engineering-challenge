@@ -4,6 +4,8 @@ dotenv.config();
 import express, { Express, Request, Response } from "express";
 import { CommonRoutesConfig, HealthRoutes } from "./routes";
 
+import { HttpStatusCode } from "./utils/HttpStatusCodes.enum";
+
 class ExpressApp {
 
   public app: Express;
@@ -31,7 +33,7 @@ class ExpressApp {
 
   private setupRoutes = (): void => {
     this.app.get('/', async (req: Request, res: Response) => {
-      res.status(200).send('Hello! My name is Celso Santos');
+      res.status(HttpStatusCode.OK).send('Hello! My name is Celso Santos');
     });
 
     const routes: Array<CommonRoutesConfig> = [];
