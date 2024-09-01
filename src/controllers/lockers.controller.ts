@@ -2,7 +2,8 @@ import { Request, Response } from "express";
 import { randomUUID } from "crypto";
 import { lockerCollection } from "../db/dbManager";
 import { HttpStatusCode } from "../utils/HttpStatusCodes.enum";
-import { Locker, LockerStatus } from "../models";
+import { Locker, LockerStatus, Rent } from "../models";
+import { RentsController } from "./rents.controller";
 
 export class LockersController {
   list = async (request: Request, response: Response) => {
@@ -44,7 +45,21 @@ export class LockersController {
     if (!locker) {
       return response.status(HttpStatusCode.NOT_FOUND).send("unregistered locker");
     }
-    return response.status(HttpStatusCode.OK).send(locker);
+    let result: Object = {
+      ...locker
+    }
+
+    const includeRents: boolean = Boolean(request.query.rents?.toString());
+    let rents: Rent[] = [];
+    if (includeRents) {
+      rents = RentsController.findByLockerId(locker.id);
+      result = {
+        ...locker,
+        rents: rents
+      }
+    }
+
+    return response.status(HttpStatusCode.OK).send(result);
   }
 
   save = async (request: Request, response: Response) => {

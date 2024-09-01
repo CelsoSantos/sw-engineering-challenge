@@ -3,7 +3,7 @@ import { createExpressAppInstance, getExpressAppInstance } from "./appInstance";
 import { Express } from "express";
 import request from "supertest";
 import { HttpStatusCode } from "./utils/HttpStatusCodes.enum";
-import { initTestDb } from "./db/dbManager";
+import { initDb, initTestDb } from "./db/dbManager";
 import { Bloq, Locker, LockerStatus, Rent, RentSize, RentStatus } from "./models";
 
 let expressApp: ExpressApp;
@@ -22,6 +22,7 @@ beforeAll(async () => {
   const port = Math.floor(Math.random() * (max - min + 1)) + min;
   expressApp.startServer(port);
   initTestDb();
+  // initDb();
 })
 
 // beforeEach(async () => {
@@ -58,17 +59,55 @@ describe("GET /health", () => {
   });
 });
 
+/**
+ * Bloqs Tests
+ */
+
 describe("GET /bloqs", () => {
-  it('responds with the X number of Bloqs, where X is the page size', async () => {
+  it('responds with a list of X <= 10 Bloqs, where 10 is the default page size, when per_page not given', async () => {
     const response = await request(getApp()).get("/bloqs")
     expect(response.status).toBe(HttpStatusCode.OK);
-    expect(response.body.page).toBe(1);
+    expect(response.body.page).toBe(1); // When ommited, page is always 1
     expect(response.body.per_page).toBe(10); // Default size: 10
     expect(response.body.total).toBe(3); // Initial size: 3 elements
     expect(response.body.data.length).toBe(3); // Length should match total
     let bloq: Bloq = response.body.data[0];
     expect(bloq.id).toBe("c3ee858c-f3d8-45a3-803d-e080649bbb6f");
-    // (...)
+  });
+
+  it('responds with a list of X <= N Bloqs, where N is the given per_page size,', async () => {
+    const response = await request(getApp()).get("/bloqs?page=1&per_page=20")
+    expect(response.status).toBe(HttpStatusCode.OK);
+    expect(response.body.page).toBe(1);
+    expect(response.body.per_page).toBe(20);
+    expect(response.body.total).toBe(3); // Initial size: 3 elements
+    expect(response.body.data.length).toBe(3); // Length should match total
+    let bloq: Bloq = response.body.data[0];
+    expect(bloq.id).toBe("c3ee858c-f3d8-45a3-803d-e080649bbb6f");
+  });
+
+  it('responds with an emtpy list Bloqs, when page greater than the existing number of Bloqs,', async () => {
+    const response = await request(getApp()).get("/bloqs?page=2&per_page=10")
+    expect(response.status).toBe(HttpStatusCode.OK);
+    expect(response.body.page).toBe(2);
+    expect(response.body.per_page).toBe(10);
+    expect(response.body.total).toBe(3); // Initial size: 3 elements
+    expect(response.body.data.length).toBe(0); // Length should be 0 since we overshoot the number of items
+  });
+
+  it('responds with 400 Bad Request when page is not a number', async () => {
+    const response = await request(getApp()).get("/bloqs?page=x&per_page=10")
+    expect(response.status).toBe(HttpStatusCode.BAD_REQUEST);
+  });
+
+  it('responds with 400 Bad Request when per_page is not a number', async () => {
+    const response = await request(getApp()).get("/bloqs?page=1&per_page=xx")
+    expect(response.status).toBe(HttpStatusCode.BAD_REQUEST);
+  });
+
+  it('responds with 404 Not Found when Bloq does not exist', async () => {
+    const response = await request(getApp()).get("/bloqs/8caacb43-ff81-49ea-b45a-62b8a3e9deb7")
+    expect(response.status).toBe(HttpStatusCode.NOT_FOUND);
   });
 
   it('responds with the requested Bloq detailed information', async () => {
@@ -98,6 +137,7 @@ describe("PUT /bloqs/new", () => {
     title: "Some new Bloq",
     address: "Some address"
   }
+
   it('adds a new Bloq and responds with the Bloq data', async () => {
     const response = await request(getApp()).put("/bloqs/new").send(newBloq);
     expect(response.status).toBe(HttpStatusCode.OK);
@@ -116,12 +156,48 @@ describe("PUT /bloqs/new", () => {
     let bloq: Bloq = response.body.data[3];
     expect(bloq.title).toBe(newBloq.title);
     expect(bloq.address).toBe(newBloq.address);
-    // (...)
   });
 });
 
+describe("PATCH /bloqs/:id", () => {
+  let bloq = {
+    title: "New Name",
+    address: "New Address"
+  }
+
+  it('updates Bloq and responds with the Bloq data', async () => {
+    const response = await request(getApp()).patch("/bloqs/484e01be-1570-4ac1-a2a9-02aad3acc54e").send(bloq);
+    expect(response.status).toBe(HttpStatusCode.OK);
+    expect(response.body.length).toBe(1);
+    let obj = response.body[0];
+    expect(obj.title).toBe(bloq.title);
+  });
+
+  it('responds with 404 Not Found when Bloq does not exist', async () => {
+    const response = await request(getApp()).patch("/bloqs/8caacb43-ff81-49ea-b45a-62b8a3e9deb7").send(bloq)
+    expect(response.status).toBe(HttpStatusCode.NOT_FOUND);
+  });
+});
+
+describe("DELETE /bloqs/:id", () => {
+  it('deletes Bloq', async () => {
+    const response = await request(getApp()).delete("/bloqs/22ffa3c5-3a3d-4f71-81f1-cac18ffbc510");
+    expect(response.status).toBe(HttpStatusCode.OK);
+    expect(response.text).toBe("bloq has been removed")
+  });
+
+  it('responds with 404 Not Found when Bloq does not exist', async () => {
+    const response = await request(getApp()).patch("/bloqs/8caacb43-ff81-49ea-b45a-62b8a3e9deb7");
+    expect(response.status).toBe(HttpStatusCode.NOT_FOUND);
+  });
+});
+
+/**
+ * Lockers Tests
+ */
+
 describe("GET /lockers", () => {
-  it('responds with the X number of Lockers, where X is the page size', async () => {
+  it('responds with a list of X <= 10 Lockers, where 10 is the default page size, when per_page not given', async () => {
     const response = await request(getApp()).get("/lockers")
     expect(response.status).toBe(HttpStatusCode.OK);
     expect(response.body.page).toBe(1);
@@ -130,7 +206,41 @@ describe("GET /lockers", () => {
     expect(response.body.data.length).toBe(9); // Length should match total
     let locker: Locker = response.body.data[0];
     expect(locker.id).toBe("1b8d1e89-2514-4d91-b813-044bf0ce8d20");
-    // (...)
+  });
+
+  it('responds with a list of X <= N Lockers, where N is the given per_page size,', async () => {
+    const response = await request(getApp()).get("/lockers?page=1&per_page=20");
+    expect(response.status).toBe(HttpStatusCode.OK);
+    expect(response.body.page).toBe(1);
+    expect(response.body.per_page).toBe(20); // Default size: 10
+    expect(response.body.total).toBe(9); // Initial size: 9 elements
+    expect(response.body.data.length).toBe(9); // Length should match total
+    let locker: Locker = response.body.data[0];
+    expect(locker.id).toBe("1b8d1e89-2514-4d91-b813-044bf0ce8d20");
+  });
+
+  it('responds with an emtpy list Lockers, when page greater than the existing number of Lockers,', async () => {
+    const response = await request(getApp()).get("/lockers?page=5&per_page=20");
+    expect(response.status).toBe(HttpStatusCode.OK);
+    expect(response.body.page).toBe(5);
+    expect(response.body.per_page).toBe(20);
+    expect(response.body.total).toBe(9); // Initial size: 9 elements
+    expect(response.body.data.length).toBe(0); // Length should be 0 since we overshoot the number of items
+  });
+
+  it('responds with 400 Bad Request when page is not a number', async () => {
+    const response = await request(getApp()).get("/lockers?page=x&per_page=10")
+    expect(response.status).toBe(HttpStatusCode.BAD_REQUEST);
+  });
+
+  it('responds with 400 Bad Request when per_page is not a number', async () => {
+    const response = await request(getApp()).get("/lockers?page=1&per_page=xx")
+    expect(response.status).toBe(HttpStatusCode.BAD_REQUEST);
+  });
+
+  it('responds with 404 Not Found when Locker does not exist', async () => {
+    const response = await request(getApp()).get("/locker/3c81a85b-d0ae-4294-8966-adf21922d5b7")
+    expect(response.status).toBe(HttpStatusCode.NOT_FOUND);
   });
 
   it('responds with the requested Locker detailed information', async () => {
@@ -140,6 +250,22 @@ describe("GET /lockers", () => {
     expect(response.body.bloqId).toBe("c3ee858c-f3d8-45a3-803d-e080649bbb6f");
     expect(response.body.status).toBe(LockerStatus.CLOSED);
     expect(response.body.isOccupied).toBeTruthy();
+  });
+
+  it('responds with the requested Lockers detailed information, including Rents in Lockers', async () => {
+    const response = await request(getApp()).get("/lockers/1b8d1e89-2514-4d91-b813-044bf0ce8d20?rents=true")
+    expect(response.status).toBe(HttpStatusCode.OK);
+    expect(response.body.id).toBe("1b8d1e89-2514-4d91-b813-044bf0ce8d20");
+    expect(response.body.bloqId).toBe("c3ee858c-f3d8-45a3-803d-e080649bbb6f");
+    expect(response.body.status).toBe(LockerStatus.CLOSED);
+    expect(response.body.isOccupied).toBeTruthy();
+    expect(response.body.rents.length).toBe(1) // Init data includes 1 rent
+    let rent: Rent = response.body.rents[0];
+    expect(rent.id).toBe("40efc6fd-f10c-4561-88bf-be916613377c");
+    expect(rent.lockerId).toBe("1b8d1e89-2514-4d91-b813-044bf0ce8d20");
+    expect(rent.status).toBe(RentStatus.WAITING_PICKUP);
+    expect(rent.size).toBe(RentSize.L);
+    expect(rent.weight).toBe(7);
   });
 });
 
@@ -169,10 +295,45 @@ describe("PUT /lockers/new", () => {
     expect(locker.bloqId).toBe(newLocker.bloqId);
     expect(locker.status).toBe(newLocker.status);
     expect(locker.isOccupied).toBe(newLocker.isOccupied);
-    // (...)
   });
 });
 
+describe("PATCH /lockers/:id", () => {
+  let locker = {
+    status: LockerStatus.OPEN,
+    isOccupied: false
+  }
+
+  it('updates Locker and responds with the Locker data', async () => {
+    const response = await request(getApp()).patch("/lockers/1b8d1e89-2514-4d91-b813-044bf0ce8d20").send(locker);
+    expect(response.status).toBe(HttpStatusCode.OK);
+    expect(response.body.length).toBe(1);
+    let obj = response.body[0];
+    expect(obj.status).toBe(locker.status);
+  });
+
+  it('responds with 404 Not Found when Bloq does not exist', async () => {
+    const response = await request(getApp()).patch("/lockers/9ccf0e1c-0755-4f86-901e-9945c188ca33").send(locker)
+    expect(response.status).toBe(HttpStatusCode.NOT_FOUND);
+  });
+});
+
+describe("DELETE /lockers/:id", () => {
+  it('deletes Locker', async () => {
+    const response = await request(getApp()).delete("/lockers/1b8d1e89-2514-4d91-b813-044bf0ce8d20");
+    expect(response.status).toBe(HttpStatusCode.OK);
+    expect(response.text).toBe("locker has been removed")
+  });
+
+  it('responds with 404 Not Found when Locker does not exist', async () => {
+    const response = await request(getApp()).patch("/lockers/9ccf0e1c-0755-4f86-901e-9945c188ca33");
+    expect(response.status).toBe(HttpStatusCode.NOT_FOUND);
+  });
+});
+
+/**
+ * Rents Tests
+ */
 
 describe("GET /rents", () => {
   it('responds with the X number of Rents, where X is the page size', async () => {
@@ -184,7 +345,6 @@ describe("GET /rents", () => {
     expect(response.body.data.length).toBe(4); // Length should match total
     let rent: Rent = response.body.data[0];
     expect(rent.id).toBe("50be06a8-1dec-4b18-a23c-e98588207752");
-    // (...)
   });
 
   it('responds with the requested Rent detailed information', async () => {
@@ -204,8 +364,8 @@ describe("PUT /rents/new", () => {
     lockerId: "ea6db2f6-2da7-42ed-9619-d40d718b7bec",
     weight: 10,
     size: RentSize.S,
-    status: RentStatus.WAITING_PICKUP,
-    droppedAt: Date.now()
+    status: RentStatus.WAITING_DROPOFF,
+    createdAt: Date.now()
   }
   it('adds a new Rent and responds with the Rent data', async () => {
     const response = await request(getApp()).put("/rents/new").send(newRent);
@@ -230,6 +390,41 @@ describe("PUT /rents/new", () => {
     expect(rent.weight).toBe(newRent.weight);
     expect(rent.size).toBe(newRent.size);
     expect(rent.status).toBe(newRent.status);
-    // (...)
+  });
+});
+
+describe("PATCH /rents/:id", () => {
+  let rent = {
+    lockerId: "ea6db2f6-2da7-42ed-9619-d40d718b7bec",
+    weight: 10,
+    size: RentSize.S,
+    status: RentStatus.WAITING_DROPOFF,
+    droppedAt: Date.now()
+  }
+
+  it('updates Rent and responds with the Rent data', async () => {
+    const response = await request(getApp()).patch("/rents/40efc6fd-f10c-4561-88bf-be916613377c").send(rent);
+    expect(response.status).toBe(HttpStatusCode.OK);
+    expect(response.body.length).toBe(1);
+    let obj = response.body[0];
+    expect(obj.status).toBe(rent.status);
+  });
+
+  it('responds with 404 Not Found when Rent does not exist', async () => {
+    const response = await request(getApp()).patch("/rents/f4f9634d-915f-404a-b687-f2c6bc82cd08").send(rent)
+    expect(response.status).toBe(HttpStatusCode.NOT_FOUND);
+  });
+});
+
+describe("DELETE /rents/:id", () => {
+  it('deletes Rent', async () => {
+    const response = await request(getApp()).delete("/rents/40efc6fd-f10c-4561-88bf-be916613377c");
+    expect(response.status).toBe(HttpStatusCode.OK);
+    expect(response.text).toBe("rent has been removed")
+  });
+
+  it('responds with 404 Not Found when Rent does not exist', async () => {
+    const response = await request(getApp()).patch("/rents/f4f9634d-915f-404a-b687-f2c6bc82cd08");
+    expect(response.status).toBe(HttpStatusCode.NOT_FOUND);
   });
 });

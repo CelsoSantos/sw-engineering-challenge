@@ -134,7 +134,7 @@ export class BloqsController {
     }).indexOf(id);
   }
 
-  private findByTitle = (title: string) => {
+  static findByTitle = (title: string) => {
     return bloqCollection.filter((bloq: Bloq) => {
       return bloq.title.includes(title);
     });
