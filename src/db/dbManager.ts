@@ -41,6 +41,12 @@ export const initDb = () => {
   listenChangesinArray(rentCollection, writeFile);
 }
 
+export const initTestDb = () => {
+  populateBloqs();
+  populateLockers();
+  populateRents();
+}
+
 /* @arr array you want to listen to
    @callback function that will be called on any change inside array
  */
