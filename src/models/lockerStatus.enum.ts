@@ -1,4 +1,4 @@
 export enum LockerStatus {
-  OPEN = "OPEN",
-  CLOSED = "CLOSED"
+  OPEN = 'OPEN',
+  CLOSED = 'CLOSED',
 }

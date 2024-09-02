@@ -1,42 +1,50 @@
-import { RentSize, RentStatus } from "./index"
+import { RentSize, RentStatus } from './index';
 
 interface IRent {
-  id: string
-  lockerId?: string
-  weight: number
-  size: RentSize
-  status: RentStatus
-  createdAt?: Date
-  droppedAt?: Date
-  pickedUpAt?: Date
+  id: string;
+  lockerId?: string;
+  weight: number;
+  size: RentSize;
+  status: RentStatus;
+  createdAt?: Date;
+  droppedAt?: Date;
+  pickedUpAt?: Date;
 }
 
 class Rent implements IRent {
+  id: string;
+  lockerId?: string;
+  weight: number;
+  size: RentSize;
+  status: RentStatus;
+  createdAt?: Date;
+  droppedAt?: Date;
+  pickedUpAt?: Date;
 
-  id: string
-  lockerId?: string
-  weight: number
-  size: RentSize
-  status: RentStatus
-  createdAt?: Date
-  droppedAt?: Date
-  pickedUpAt?: Date
-
-  constructor(id: string, weight: number, size: RentSize, status: RentStatus, lockerId?: string | undefined, createdAt?: Date, droppedAt?: Date, pickedUpAt?: Date) {
+  constructor(
+    id: string,
+    weight: number,
+    size: RentSize,
+    status: RentStatus,
+    lockerId?: string | undefined,
+    createdAt?: Date,
+    droppedAt?: Date,
+    pickedUpAt?: Date,
+  ) {
     this.id = id;
-    if(lockerId) {
+    if (lockerId) {
       this.lockerId = lockerId;
     }
     this.weight = weight;
     this.size = size;
     this.status = status;
-    if(createdAt) {
+    if (createdAt) {
       this.createdAt = createdAt;
     }
-    if(droppedAt) {
+    if (droppedAt) {
       this.droppedAt = droppedAt;
     }
-    if(pickedUpAt) {
+    if (pickedUpAt) {
       this.pickedUpAt = pickedUpAt;
     }
   }

@@ -1,9 +1,9 @@
-import { Request, Response } from "express";
-import { randomUUID } from "crypto";
-import { lockerCollection } from "../db/dbManager";
-import { HttpStatusCode } from "../utils/HttpStatusCodes.enum";
-import { Locker, LockerStatus, Rent } from "../models";
-import { RentsController } from "./rents.controller";
+import { Request, Response } from 'express';
+import { randomUUID } from 'crypto';
+import { lockerCollection } from '../db/dbManager';
+import { HttpStatusCode } from '../utils/HttpStatusCodes.enum';
+import { Locker, LockerStatus, Rent } from '../models';
+import { RentsController } from './rents.controller';
 
 export class LockersController {
   list = async (request: Request, response: Response) => {
@@ -13,7 +13,7 @@ export class LockersController {
 
     if (request.query.page) {
       page = parseInt(request.query.page?.toString());
-      page = (page == 0) ? 1 : page;
+      page = page == 0 ? 1 : page;
     }
 
     if (request.query.per_page) {
@@ -21,25 +21,24 @@ export class LockersController {
     }
 
     if (isNaN(page) || isNaN(per_page)) {
-      return response.status(HttpStatusCode.BAD_REQUEST).send("Bad Request");
+      return response.status(HttpStatusCode.BAD_REQUEST).send('Bad Request');
     }
 
     if (request.query.filter) {
-
     }
 
     const skipItems = (page - 1) * per_page;
 
     // let lockers = lockerCollection.slice(skipItems).slice(0, per_page);
-    let lockers = lockerCollection.slice(skipItems, per_page);
-    let resp = {
+    const lockers = lockerCollection.slice(skipItems, per_page);
+    const resp = {
       page: page,
       per_page: per_page,
       total: lockerCollection.length,
-      data: lockers
-    }
+      data: lockers,
+    };
     return response.status(HttpStatusCode.OK).send(resp);
-  }
+  };
 
   getById = async (request: Request, response: Response) => {
     const lockerId = request.params.id;
@@ -49,11 +48,13 @@ export class LockersController {
 
     const locker = LockersController.findById(lockerId);
     if (!locker) {
-      return response.status(HttpStatusCode.NOT_FOUND).send("unregistered locker");
+      return response
+        .status(HttpStatusCode.NOT_FOUND)
+        .send('unregistered locker');
     }
     let result: Object = {
-      ...locker
-    }
+      ...locker,
+    };
 
     const includeRents: boolean = Boolean(request.query.rents?.toString());
     let rents: Rent[] = [];
@@ -61,12 +62,12 @@ export class LockersController {
       rents = RentsController.findByLockerId(locker.id);
       result = {
         ...locker,
-        rents: rents
-      }
+        rents: rents,
+      };
     }
 
     return response.status(HttpStatusCode.OK).send(result);
-  }
+  };
 
   save = async (request: Request, response: Response) => {
     const { bloqId, status, isOccupied } = request.body;
@@ -75,21 +76,25 @@ export class LockersController {
 
     try {
       const index = lockerCollection.push(locker);
-      return response.status(HttpStatusCode.OK).send(lockerCollection.at(index - 1));
+      return response
+        .status(HttpStatusCode.OK)
+        .send(lockerCollection.at(index - 1));
     } catch (error) {
       return response.status(HttpStatusCode.INTERNAL_SERVER_ERROR).send(error);
     }
-  }
+  };
 
   update = async (request: Request, response: Response) => {
     const lockerId = request.params.id;
     const { id, bloqId, status, isOccupied } = request.body;
 
-    let locker = LockersController.findById(lockerId);
-    let lockerIdx = LockersController.getIndexById(lockerId);
+    const locker = LockersController.findById(lockerId);
+    const lockerIdx = LockersController.getIndexById(lockerId);
 
     if (!locker || lockerIdx < 0) {
-      return response.status(HttpStatusCode.NOT_FOUND).send("unregistered locker");
+      return response
+        .status(HttpStatusCode.NOT_FOUND)
+        .send('unregistered locker');
     } else {
       // Let's assume one can't change a Locker from a Bloq
       // As such, a BloqId is always ignored and never modified
@@ -97,7 +102,7 @@ export class LockersController {
         locker.status = status;
       }
       if (isOccupied) {
-        locker.isOccupied = isOccupied
+        locker.isOccupied = isOccupied;
       }
     }
 
@@ -107,7 +112,7 @@ export class LockersController {
     } catch (error) {
       return response.status(HttpStatusCode.INTERNAL_SERVER_ERROR).send(error);
     }
-  }
+  };
 
   delete = async (request: Request, response: Response) => {
     const lockerId = request.params.id;
@@ -115,70 +120,74 @@ export class LockersController {
     //   response.status(400).send("locker ID")
     // }
 
-    let lockerToRemove = LockersController.findById(lockerId);
+    const lockerToRemove = LockersController.findById(lockerId);
     if (!lockerToRemove) {
-      return response.status(HttpStatusCode.NOT_FOUND).send("unregistered locker");
+      return response
+        .status(HttpStatusCode.NOT_FOUND)
+        .send('unregistered locker');
     }
     try {
-      let idx = LockersController.getIndexById(lockerToRemove.id);
+      const idx = LockersController.getIndexById(lockerToRemove.id);
       if (idx >= -1) {
         lockerCollection.splice(idx, 1);
       }
-      return response.status(HttpStatusCode.OK).send("locker has been removed");
+      return response.status(HttpStatusCode.OK).send('locker has been removed');
     } catch (error) {
       return response.status(HttpStatusCode.INTERNAL_SERVER_ERROR).send(error);
     }
-  }
+  };
 
   static findById = (id: string) => {
     return lockerCollection.find((locker: Locker) => {
       return locker.id === id;
     });
-  }
+  };
 
   static getIndexById = (id: string) => {
-    return lockerCollection.map((locker) => {
-      return locker.id;
-    }).indexOf(id);
-  }
+    return lockerCollection
+      .map((locker) => {
+        return locker.id;
+      })
+      .indexOf(id);
+  };
 
   static findByBloqId = (bloqId: string) => {
     return lockerCollection.filter((locker: Locker) => {
       return locker.bloqId === bloqId;
     });
-  }
+  };
 
   static findEmpty = () => {
     return lockerCollection.filter((locker: Locker) => {
       return locker.isOccupied === false;
-    })
-  }
+    });
+  };
 
   static modifyStatus = (id: string, status: LockerStatus) => {
-    let locker = lockerCollection.find((locker: Locker) => {
+    const locker = lockerCollection.find((locker: Locker) => {
       return locker.id === id;
     });
     let idx = -1;
     if (locker) {
-      idx = LockersController.getIndexById(locker.id)
+      idx = LockersController.getIndexById(locker.id);
       if (idx >= 0) {
         locker.status = status;
         lockerCollection.splice(idx, 1, locker);
       }
     }
-  }
+  };
 
   static modifyOccupation = (id: string, isOccupied: boolean) => {
-    let locker = lockerCollection.find((locker: Locker) => {
+    const locker = lockerCollection.find((locker: Locker) => {
       return locker.id === id;
     });
     let idx = -1;
     if (locker) {
-      idx = LockersController.getIndexById(locker.id)
+      idx = LockersController.getIndexById(locker.id);
       if (idx >= 0) {
         locker.isOccupied = isOccupied;
         lockerCollection.splice(idx, 1, locker);
       }
     }
-  }
+  };
 }

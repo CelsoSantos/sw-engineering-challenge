@@ -1,9 +1,9 @@
-import { Request, Response } from "express";
-import { randomUUID } from "crypto";
-import { lockerCollection, rentCollection } from "../db/dbManager";
-import { HttpStatusCode } from "../utils/HttpStatusCodes.enum";
-import { Locker, Rent, RentSize, RentStatus } from "../models";
-import { LockersController } from "./lockers.controller";
+import { Request, Response } from 'express';
+import { randomUUID } from 'crypto';
+import { lockerCollection, rentCollection } from '../db/dbManager';
+import { HttpStatusCode } from '../utils/HttpStatusCodes.enum';
+import { Locker, Rent, RentSize, RentStatus } from '../models';
+import { LockersController } from './lockers.controller';
 
 export class RentsController {
   list = async (request: Request, response: Response) => {
@@ -12,7 +12,7 @@ export class RentsController {
 
     if (request.query.page) {
       page = parseInt(request.query.page?.toString());
-      page = (page == 0) ? 1 : page;
+      page = page == 0 ? 1 : page;
     }
 
     if (request.query.per_page) {
@@ -20,20 +20,20 @@ export class RentsController {
     }
 
     if (isNaN(page) || isNaN(per_page)) {
-      return response.status(HttpStatusCode.BAD_REQUEST).send("Bad Request");
+      return response.status(HttpStatusCode.BAD_REQUEST).send('Bad Request');
     }
 
     const skipItems = (page - 1) * per_page;
 
-    let items = rentCollection.slice(skipItems).slice(0, per_page);
-    let resp = {
+    const items = rentCollection.slice(skipItems).slice(0, per_page);
+    const resp = {
       page: page,
       per_page: per_page,
       total: rentCollection.length,
-      data: items
-    }
+      data: items,
+    };
     return response.status(HttpStatusCode.OK).send(resp);
-  }
+  };
 
   getById = async (request: Request, response: Response) => {
     const rentId = request.params.id;
@@ -43,46 +43,60 @@ export class RentsController {
 
     const rent = this.findById(rentId);
     if (!rent) {
-      return response.status(HttpStatusCode.NOT_FOUND).send("unregistered rent");
+      return response
+        .status(HttpStatusCode.NOT_FOUND)
+        .send('unregistered rent');
     }
     return response.status(HttpStatusCode.OK).send(rent);
-  }
+  };
 
   save = async (request: Request, response: Response) => {
     const { weight, size } = request.body;
 
-    const rent: Rent = new Rent(randomUUID(), weight, size, RentStatus.CREATED, undefined, new Date());
+    const rent: Rent = new Rent(
+      randomUUID(),
+      weight,
+      size,
+      RentStatus.CREATED,
+      undefined,
+      new Date(),
+    );
 
     try {
       const index = rentCollection.push(rent);
-      return response.status(HttpStatusCode.OK).send(rentCollection.at(index - 1));
+      return response
+        .status(HttpStatusCode.OK)
+        .send(rentCollection.at(index - 1));
     } catch (error) {
       return response.status(HttpStatusCode.INTERNAL_SERVER_ERROR).send(error);
     }
-  }
+  };
 
   update = async (request: Request, response: Response) => {
     const rentId = request.params.id;
     const { lockerId, weight, size, status } = request.body;
 
-    let rent = this.findById(rentId);
-    let rentIdx = this.getIndexById(rentId);
+    const rent = this.findById(rentId);
+    const rentIdx = this.getIndexById(rentId);
 
     let occupied: boolean = false;
 
     if (!rent || rentIdx < 0) {
-      return response.status(HttpStatusCode.NOT_FOUND).send("unregistered rent");
+      return response
+        .status(HttpStatusCode.NOT_FOUND)
+        .send('unregistered rent');
     } else {
-
       if (lockerId) {
-        let locker: Locker | undefined = LockersController.findById(lockerId);
+        const locker: Locker | undefined = LockersController.findById(lockerId);
         occupied = Boolean(locker?.isOccupied);
         if (occupied && rent.status === RentStatus.CREATED) {
-          return response.status(HttpStatusCode.NOT_MODIFIED).send("locker is already occupied");
+          return response
+            .status(HttpStatusCode.NOT_MODIFIED)
+            .send('locker is already occupied');
         }
         rent.lockerId = lockerId;
         if (!status) {
-          rent.status = RentStatus.WAITING_DROPOFF
+          rent.status = RentStatus.WAITING_DROPOFF;
         }
       }
 
@@ -94,7 +108,9 @@ export class RentsController {
         if (size in RentSize) {
           rent.size = size;
         } else {
-          return response.status(HttpStatusCode.BAD_REQUEST).send("invalid rent size");
+          return response
+            .status(HttpStatusCode.BAD_REQUEST)
+            .send('invalid rent size');
         }
       }
 
@@ -115,7 +131,9 @@ export class RentsController {
             // LockersController.modifyOccupation(lockerId, false);
           }
         } else {
-          return response.status(HttpStatusCode.BAD_REQUEST).send("invalid rent status");
+          return response
+            .status(HttpStatusCode.BAD_REQUEST)
+            .send('invalid rent status');
         }
       }
     }
@@ -129,7 +147,7 @@ export class RentsController {
     } catch (error) {
       return response.status(HttpStatusCode.INTERNAL_SERVER_ERROR).send(error);
     }
-  }
+  };
 
   delete = async (request: Request, response: Response) => {
     const rentId = request.params.id;
@@ -137,36 +155,40 @@ export class RentsController {
     //   response.status(400).send("rent ID")
     // }
 
-    let rentToRemove = this.findById(rentId);
+    const rentToRemove = this.findById(rentId);
     if (!rentToRemove) {
-      return response.status(HttpStatusCode.NOT_FOUND).send("unregistered rent");
+      return response
+        .status(HttpStatusCode.NOT_FOUND)
+        .send('unregistered rent');
     }
     try {
-      let idx = this.getIndexById(rentToRemove.id);
+      const idx = this.getIndexById(rentToRemove.id);
       if (idx >= -1) {
         rentCollection.splice(idx, 1);
       }
-      return response.status(HttpStatusCode.OK).send("rent has been removed");
+      return response.status(HttpStatusCode.OK).send('rent has been removed');
     } catch (error) {
       return response.status(HttpStatusCode.INTERNAL_SERVER_ERROR).send(error);
     }
-  }
+  };
 
   private findById = (id: string) => {
     return rentCollection.find((rent: Rent) => {
       return rent.id === id;
     });
-  }
+  };
 
   private getIndexById = (id: string) => {
-    return rentCollection.map((rent) => {
-      return rent.id;
-    }).indexOf(id);
-  }
+    return rentCollection
+      .map((rent) => {
+        return rent.id;
+      })
+      .indexOf(id);
+  };
 
   static findByLockerId = (lockerId: string) => {
     return rentCollection.filter((rent: Rent) => {
       return rent.lockerId === lockerId;
     });
-  }
+  };
 }

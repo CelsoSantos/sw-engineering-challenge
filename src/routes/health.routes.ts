@@ -8,7 +8,7 @@ export class HealthRoutes extends CommonRoutesConfig {
   }
 
   configureRoutes() {
-    this.app.route(`/health`).get(healthCheck)
+    this.app.route(`/health`).get(healthCheck);
     return this.app;
   }
 }

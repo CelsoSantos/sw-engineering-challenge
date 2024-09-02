@@ -1,13 +1,13 @@
 interface IBloq {
-  id: string
-  title: string
-  address: string
+  id: string;
+  title: string;
+  address: string;
 }
 
 class Bloq implements IBloq {
-  id: string
-  title: string
-  address: string
+  id: string;
+  title: string;
+  address: string;
 
   constructor(id: string, title: string, address: string) {
     this.id = id;

@@ -1,4 +1,11 @@
-import { bloqCollection, destroyTestDb, initTestDb, lockerCollection, rentCollection, testPopulateBloqs } from "./dbManager"
+import {
+  bloqCollection,
+  destroyTestDb,
+  initTestDb,
+  lockerCollection,
+  rentCollection,
+  testPopulateBloqs,
+} from './dbManager';
 
 // beforeAll(() => {
 //   initTestDb();
@@ -8,13 +15,12 @@ import { bloqCollection, destroyTestDb, initTestDb, lockerCollection, rentCollec
 //   destroyTestDb();
 // })
 
-
-describe("DB Tests", () => {
-  it("Initializes Test DB correctly", () => {
-    let dbModule = jest.requireActual("./dbManager");
-    let pushBloqsMethod = jest.spyOn(dbModule, "testPopulateBloqs")
-    let pushLockersMethod = jest.spyOn(dbModule, "testPopulateLockers")
-    let pushRentsMethod = jest.spyOn(dbModule, "testPopulateRents")
+describe('DB Tests', () => {
+  it('Initializes Test DB correctly', () => {
+    let dbModule = jest.requireActual('./dbManager');
+    let pushBloqsMethod = jest.spyOn(dbModule, 'testPopulateBloqs');
+    let pushLockersMethod = jest.spyOn(dbModule, 'testPopulateLockers');
+    let pushRentsMethod = jest.spyOn(dbModule, 'testPopulateRents');
 
     initTestDb();
 
@@ -24,13 +30,12 @@ describe("DB Tests", () => {
     expect(bloqCollection.length).toBeGreaterThan(0);
     expect(lockerCollection.length).toBeGreaterThan(0);
     expect(rentCollection.length).toBeGreaterThan(0);
-  })
+  });
 
-  it("Destroys Test DB correctly", () => {
+  it('Destroys Test DB correctly', () => {
     destroyTestDb();
-    expect(bloqCollection.length).toBe(0)
+    expect(bloqCollection.length).toBe(0);
     expect(lockerCollection.length).toBe(0);
     expect(rentCollection.length).toBe(0);
-  })
-})
-
+  });
+});
