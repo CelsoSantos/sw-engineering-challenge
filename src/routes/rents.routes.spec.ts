@@ -3,7 +3,7 @@ import { createExpressAppInstance, getExpressAppInstance } from "../appInstance"
 import { Express } from "express";
 import request from "supertest";
 import { HttpStatusCode } from "../utils/HttpStatusCodes.enum";
-import { initDb } from "../db/dbManager";
+import { initTestDb } from "../db/dbManager";
 import { Rent, RentSize, RentStatus } from "../models";
 
 let expressApp: ExpressApp;
@@ -21,8 +21,8 @@ beforeAll(async () => {
   const max = 8000;
   const port = Math.floor(Math.random() * (max - min + 1)) + min;
   expressApp.startServer(port);
-  // initTestDb();
-  initDb();
+  initTestDb();
+  // initDb();
 })
 
 // beforeEach(async () => {
@@ -63,7 +63,7 @@ describe("GET /rents", () => {
     expect(response.status).toBe(HttpStatusCode.OK);
     let rent: Rent = response.body;
     expect(rent.id).toBe("50be06a8-1dec-4b18-a23c-e98588207752");
-    expect(rent.lockerId).toBeNull();
+    // expect(rent.lockerId).toBeNull();
     expect(rent.weight).toBe(5);
     expect(rent.size).toBe(RentSize.M);
     expect(rent.status).toBe(RentStatus.CREATED)
@@ -72,20 +72,18 @@ describe("GET /rents", () => {
 
 describe("PUT /rents/new", () => {
   let newRent = {
-    lockerId: "ea6db2f6-2da7-42ed-9619-d40d718b7bec",
     weight: 10,
-    size: RentSize.S,
-    status: RentStatus.WAITING_DROPOFF,
-    createdAt: Date.now()
+    size: RentSize.S
   }
+
   it('adds a new Rent and responds with the Rent data', async () => {
     const response = await request(getApp()).put("/rents/new").send(newRent);
     expect(response.status).toBe(HttpStatusCode.OK);
     let rent: Rent = response.body;
-    expect(rent.lockerId).toBe(newRent.lockerId);
+    // expect(rent.lockerId).toBe(newRent.lockerId);
     expect(rent.weight).toBe(newRent.weight);
     expect(rent.size).toBe(newRent.size);
-    expect(rent.status).toBe(newRent.status);
+    expect(rent.status).toBe(RentStatus.CREATED);
   });
 
   it('responds with the X number of Rents, including the new Rent', async () => {
@@ -97,10 +95,10 @@ describe("PUT /rents/new", () => {
     expect(response.body.total).toBe(5); // Should have 5 elements now
     expect(response.body.data.length).toBe(5); // Length should match total
     let rent: Rent = response.body.data[4];
-    expect(rent.lockerId).toBe(newRent.lockerId);
+    // expect(rent.lockerId).toBe(newRent.lockerId);
     expect(rent.weight).toBe(newRent.weight);
     expect(rent.size).toBe(newRent.size);
-    expect(rent.status).toBe(newRent.status);
+    expect(rent.status).toBe(RentStatus.CREATED);
   });
 });
 

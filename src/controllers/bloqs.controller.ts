@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { randomUUID } from "crypto";
-import { bloqCollection } from "../db/dbManager";
+import { bloqCollection, lockerCollection } from "../db/dbManager";
 import { HttpStatusCode } from "../utils/HttpStatusCodes.enum";
 import { Bloq, Locker } from "../models";
 import { LockersController } from "./lockers.controller";
@@ -63,13 +63,32 @@ export class BloqsController {
   }
 
   save = async (request: Request, response: Response) => {
-    const { title, address } = request.body;
+    const { title, address, lockers } = request.body;
+    let result: any = {};
 
-    const bloq: Bloq = new Bloq(randomUUID(), title, address);
+    let bloqId = randomUUID();
+    const bloq: Bloq = new Bloq(bloqId, title, address);
+    result = {
+      ...bloq
+    }
+    
+    let newLockers: Locker[] = [];
+    if (lockers && lockers.length >= 0) {
+      lockers.forEach((locker: Locker) => {
+        newLockers.push(new Locker(randomUUID(), bloqId, locker.status, locker.isOccupied))
+      });
+    }
 
     try {
       const index = bloqCollection.push(bloq);
-      return response.status(HttpStatusCode.OK).send(bloqCollection.at(index - 1));
+      if (index >= 0 && newLockers.length >= 0) {
+        lockerCollection.push(...newLockers);
+        result = {
+          ...bloq,
+          lockers: LockersController.findByBloqId(bloq.id)
+        }
+      }
+      return response.status(HttpStatusCode.OK).send(result);
     } catch (error) {
       return response.status(HttpStatusCode.INTERNAL_SERVER_ERROR).send(error);
     }

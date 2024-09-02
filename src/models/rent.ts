@@ -2,7 +2,7 @@ import { RentSize, RentStatus } from "./index"
 
 interface IRent {
   id: string
-  lockerId: string
+  lockerId?: string
   weight: number
   size: RentSize
   status: RentStatus
@@ -14,7 +14,7 @@ interface IRent {
 class Rent implements IRent {
 
   id: string
-  lockerId: string
+  lockerId?: string
   weight: number
   size: RentSize
   status: RentStatus
@@ -22,9 +22,11 @@ class Rent implements IRent {
   droppedAt?: Date
   pickedUpAt?: Date
 
-  constructor(id: string, lockerId: string, weight: number, size: RentSize, status: RentStatus, createdAt?: Date, droppedAt?: Date, pickedUpAt?: Date) {
+  constructor(id: string, weight: number, size: RentSize, status: RentStatus, lockerId?: string | undefined, createdAt?: Date, droppedAt?: Date, pickedUpAt?: Date) {
     this.id = id;
-    this.lockerId = lockerId;
+    if(lockerId) {
+      this.lockerId = lockerId;
+    }
     this.weight = weight;
     this.size = size;
     this.status = status;

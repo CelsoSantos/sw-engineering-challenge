@@ -2,7 +2,8 @@ import { Request, Response } from "express";
 import { randomUUID } from "crypto";
 import { lockerCollection, rentCollection } from "../db/dbManager";
 import { HttpStatusCode } from "../utils/HttpStatusCodes.enum";
-import { Rent, RentStatus } from "../models";
+import { Locker, Rent, RentSize, RentStatus } from "../models";
+import { LockersController } from "./lockers.controller";
 
 export class RentsController {
   list = async (request: Request, response: Response) => {
@@ -48,9 +49,9 @@ export class RentsController {
   }
 
   save = async (request: Request, response: Response) => {
-    const { lockerId, weight, size, status } = request.body;
+    const { weight, size } = request.body;
 
-    const rent: Rent = new Rent(randomUUID(), lockerId, weight, size, status);
+    const rent: Rent = new Rent(randomUUID(), weight, size, RentStatus.CREATED, undefined, new Date());
 
     try {
       const index = rentCollection.push(rent);
@@ -62,39 +63,68 @@ export class RentsController {
 
   update = async (request: Request, response: Response) => {
     const rentId = request.params.id;
-    const { id, lockerId, weight, size, status, createdAt, droppedAt, pickedUpAt } = request.body;
+    const { lockerId, weight, size, status } = request.body;
 
     let rent = this.findById(rentId);
     let rentIdx = this.getIndexById(rentId);
 
+    let occupied: boolean = false;
+
     if (!rent || rentIdx < 0) {
       return response.status(HttpStatusCode.NOT_FOUND).send("unregistered rent");
     } else {
+
       if (lockerId) {
+        let locker: Locker | undefined = LockersController.findById(lockerId);
+        occupied = Boolean(locker?.isOccupied);
+        if (occupied && rent.status === RentStatus.CREATED) {
+          return response.status(HttpStatusCode.NOT_MODIFIED).send("locker is already occupied");
+        }
         rent.lockerId = lockerId;
+        if (!status) {
+          rent.status = RentStatus.WAITING_DROPOFF
+        }
       }
+
       if (weight) {
         rent.weight = weight;
       }
+
       if (size) {
-        rent.size = size;
+        if (size in RentSize) {
+          rent.size = size;
+        } else {
+          return response.status(HttpStatusCode.BAD_REQUEST).send("invalid rent size");
+        }
       }
-      if (status in RentStatus) {
-        rent.status = status;
-      }
-      if (createdAt) {
-        rent.createdAt = createdAt;
-      }
-      if (droppedAt) {
-        rent.droppedAt = droppedAt;
-      }
-      if (pickedUpAt) {
-        rent.pickedUpAt = pickedUpAt;
+
+      if (status) {
+        if (status in RentStatus) {
+          rent.status = status;
+          if (status === RentStatus.CREATED) {
+            rent.createdAt = new Date();
+          }
+          if (status === RentStatus.WAITING_PICKUP) {
+            rent.droppedAt = new Date();
+            occupied = true;
+            // LockersController.modifyOccupation(lockerId, true);
+          }
+          if (status === RentStatus.DELIVERED) {
+            rent.pickedUpAt = new Date();
+            occupied = false;
+            // LockersController.modifyOccupation(lockerId, false);
+          }
+        } else {
+          return response.status(HttpStatusCode.BAD_REQUEST).send("invalid rent status");
+        }
       }
     }
 
     try {
       const result = rentCollection.splice(rentIdx, 1, rent);
+      if (result.length >= 0) {
+        LockersController.modifyOccupation(lockerId, occupied);
+      }
       return response.status(HttpStatusCode.OK).send(result);
     } catch (error) {
       return response.status(HttpStatusCode.INTERNAL_SERVER_ERROR).send(error);

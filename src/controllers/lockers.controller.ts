@@ -9,6 +9,7 @@ export class LockersController {
   list = async (request: Request, response: Response) => {
     let page: number = 1;
     let per_page: number = 10;
+    // let filter: FilterOptions = {};
 
     if (request.query.page) {
       page = parseInt(request.query.page?.toString());
@@ -23,14 +24,19 @@ export class LockersController {
       return response.status(HttpStatusCode.BAD_REQUEST).send("Bad Request");
     }
 
+    if (request.query.filter) {
+
+    }
+
     const skipItems = (page - 1) * per_page;
 
-    let items = lockerCollection.slice(skipItems).slice(0, per_page);
+    // let lockers = lockerCollection.slice(skipItems).slice(0, per_page);
+    let lockers = lockerCollection.slice(skipItems, per_page);
     let resp = {
       page: page,
       per_page: per_page,
       total: lockerCollection.length,
-      data: items
+      data: lockers
     }
     return response.status(HttpStatusCode.OK).send(resp);
   }
@@ -41,7 +47,7 @@ export class LockersController {
     //   return response.status(400).send("locker ID")
     // }
 
-    const locker = this.findById(lockerId);
+    const locker = LockersController.findById(lockerId);
     if (!locker) {
       return response.status(HttpStatusCode.NOT_FOUND).send("unregistered locker");
     }
@@ -79,8 +85,8 @@ export class LockersController {
     const lockerId = request.params.id;
     const { id, bloqId, status, isOccupied } = request.body;
 
-    let locker = this.findById(lockerId);
-    let lockerIdx = this.getIndexById(lockerId);
+    let locker = LockersController.findById(lockerId);
+    let lockerIdx = LockersController.getIndexById(lockerId);
 
     if (!locker || lockerIdx < 0) {
       return response.status(HttpStatusCode.NOT_FOUND).send("unregistered locker");
@@ -109,12 +115,12 @@ export class LockersController {
     //   response.status(400).send("locker ID")
     // }
 
-    let lockerToRemove = this.findById(lockerId);
+    let lockerToRemove = LockersController.findById(lockerId);
     if (!lockerToRemove) {
       return response.status(HttpStatusCode.NOT_FOUND).send("unregistered locker");
     }
     try {
-      let idx = this.getIndexById(lockerToRemove.id);
+      let idx = LockersController.getIndexById(lockerToRemove.id);
       if (idx >= -1) {
         lockerCollection.splice(idx, 1);
       }
@@ -124,13 +130,13 @@ export class LockersController {
     }
   }
 
-  private findById = (id: string) => {
+  static findById = (id: string) => {
     return lockerCollection.find((locker: Locker) => {
       return locker.id === id;
     });
   }
 
-  private getIndexById = (id: string) => {
+  static getIndexById = (id: string) => {
     return lockerCollection.map((locker) => {
       return locker.id;
     }).indexOf(id);
@@ -140,5 +146,39 @@ export class LockersController {
     return lockerCollection.filter((locker: Locker) => {
       return locker.bloqId === bloqId;
     });
+  }
+
+  static findEmpty = () => {
+    return lockerCollection.filter((locker: Locker) => {
+      return locker.isOccupied === false;
+    })
+  }
+
+  static modifyStatus = (id: string, status: LockerStatus) => {
+    let locker = lockerCollection.find((locker: Locker) => {
+      return locker.id === id;
+    });
+    let idx = -1;
+    if (locker) {
+      idx = LockersController.getIndexById(locker.id)
+      if (idx >= 0) {
+        locker.status = status;
+        lockerCollection.splice(idx, 1, locker);
+      }
+    }
+  }
+
+  static modifyOccupation = (id: string, isOccupied: boolean) => {
+    let locker = lockerCollection.find((locker: Locker) => {
+      return locker.id === id;
+    });
+    let idx = -1;
+    if (locker) {
+      idx = LockersController.getIndexById(locker.id)
+      if (idx >= 0) {
+        locker.isOccupied = isOccupied;
+        lockerCollection.splice(idx, 1, locker);
+      }
+    }
   }
 }

@@ -3,7 +3,7 @@ import { createExpressAppInstance, getExpressAppInstance } from "../appInstance"
 import { Express } from "express";
 import request from "supertest";
 import { HttpStatusCode } from "../utils/HttpStatusCodes.enum";
-import { initDb } from "../db/dbManager";
+import { initTestDb } from "../db/dbManager";
 import { Rent, RentStatus, RentSize, Locker, LockerStatus } from "../models";
 
 let expressApp: ExpressApp;
@@ -21,8 +21,8 @@ beforeAll(async () => {
   const max = 8000;
   const port = Math.floor(Math.random() * (max - min + 1)) + min;
   expressApp.startServer(port);
-  // initTestDb();
-  initDb();
+  initTestDb();
+  // initDb();
 })
 
 // beforeEach(async () => {
@@ -103,19 +103,19 @@ describe("GET /lockers", () => {
   });
 
   it('responds with the requested Lockers detailed information, including Rents in Lockers', async () => {
-    const response = await request(getApp()).get("/lockers/1b8d1e89-2514-4d91-b813-044bf0ce8d20?rents=true")
+    const response = await request(getApp()).get("/lockers/6b33b2d1-af38-4b60-a3c5-53a69f70a351?rents=true")
     expect(response.status).toBe(HttpStatusCode.OK);
-    expect(response.body.id).toBe("1b8d1e89-2514-4d91-b813-044bf0ce8d20");
-    expect(response.body.bloqId).toBe("c3ee858c-f3d8-45a3-803d-e080649bbb6f");
+    expect(response.body.id).toBe("6b33b2d1-af38-4b60-a3c5-53a69f70a351");
+    expect(response.body.bloqId).toBe("484e01be-1570-4ac1-a2a9-02aad3acc54e");
     expect(response.body.status).toBe(LockerStatus.CLOSED);
     expect(response.body.isOccupied).toBeTruthy();
-    expect(response.body.rents.length).toBe(1) // Init data includes 1 rent
+    expect(response.body.rents.length).toBe(2) // Init data includes 2 rents
     let rent: Rent = response.body.rents[0];
-    expect(rent.id).toBe("40efc6fd-f10c-4561-88bf-be916613377c");
-    expect(rent.lockerId).toBe("1b8d1e89-2514-4d91-b813-044bf0ce8d20");
-    expect(rent.status).toBe(RentStatus.WAITING_PICKUP);
-    expect(rent.size).toBe(RentSize.L);
-    expect(rent.weight).toBe(7);
+    expect(rent.id).toBe("84ba232e-ce23-4d8f-ae26-68616600df48");
+    expect(rent.lockerId).toBe("6b33b2d1-af38-4b60-a3c5-53a69f70a351");
+    expect(rent.status).toBe(RentStatus.WAITING_DROPOFF);
+    expect(rent.size).toBe(RentSize.XL);
+    expect(rent.weight).toBe(10);
   });
 });
 

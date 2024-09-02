@@ -31,7 +31,7 @@ const populateLockers = (filepath: string) => {
 const populateRents = (filepath: string) => {
   let rents = fs.readFileSync(filepath, { encoding: "utf8" });
   JSON.parse(rents).forEach((rent: Rent) => {
-    rentCollection.push(new Rent(rent.id, rent.lockerId, rent.weight, rent.size, rent.status))
+    rentCollection.push(new Rent(rent.id, rent.weight, rent.size, rent.status, rent.lockerId))
   });
 }
 
