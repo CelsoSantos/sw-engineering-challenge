@@ -5,36 +5,40 @@ const rentsFile = __dirname + "/data/rents.json";
 const bloqsFile = __dirname + "/data/bloqs.json";
 const lockersFile = __dirname + "/data/lockers.json";
 
+const testRentsFile = __dirname + "/data/test/rents.json";
+const testBloqsFile = __dirname + "/data/test/bloqs.json";
+const testLockersFile = __dirname + "/data/test/lockers.json";
+
 // const bloqs: ;
 export let bloqCollection: Bloq[] = [];
 export let lockerCollection: Locker[] = [];
 export let rentCollection: Rent[] = [];
 
-const populateBloqs = () => {
-  let bloqs = fs.readFileSync(bloqsFile, { encoding: "utf8" });
+const populateBloqs = (filepath: string) => {
+  let bloqs = fs.readFileSync(filepath, { encoding: "utf8" });
   JSON.parse(bloqs).forEach((bloq: Bloq) => {
     bloqCollection.push(new Bloq(bloq.id, bloq.title, bloq.address))
   });
 }
 
-const populateLockers = () => {
-  let lockers = fs.readFileSync(lockersFile, { encoding: "utf8" });
+const populateLockers = (filepath: string) => {
+  let lockers = fs.readFileSync(filepath, { encoding: "utf8" });
   JSON.parse(lockers).forEach((locker: Locker) => {
     lockerCollection.push(new Locker(locker.id, locker.bloqId, locker.status, locker.isOccupied))
   })
 }
 
-const populateRents = () => {
-  let rents = fs.readFileSync(rentsFile, { encoding: "utf8" });
+const populateRents = (filepath: string) => {
+  let rents = fs.readFileSync(filepath, { encoding: "utf8" });
   JSON.parse(rents).forEach((rent: Rent) => {
     rentCollection.push(new Rent(rent.id, rent.lockerId, rent.weight, rent.size, rent.status))
   });
 }
 
 export const initDb = () => {
-  populateBloqs();
-  populateLockers();
-  populateRents();
+  populateBloqs(bloqsFile);
+  populateLockers(lockersFile);
+  populateRents(rentsFile);
 
   listenChangesinArray(bloqCollection, writeFile);
   listenChangesinArray(lockerCollection, writeFile);
@@ -42,9 +46,21 @@ export const initDb = () => {
 }
 
 export const initTestDb = () => {
-  populateBloqs();
-  populateLockers();
-  populateRents();
+  testPopulateBloqs();
+  testPopulateLockers();
+  testPopulateRents();
+}
+
+export const testPopulateBloqs = () => {
+  populateBloqs(testBloqsFile);
+}
+
+export const testPopulateLockers = () => {
+  populateLockers(testLockersFile);
+}
+
+export const testPopulateRents = () => {
+  populateRents(testRentsFile);
 }
 
 export const destroyTestDb = () => {
